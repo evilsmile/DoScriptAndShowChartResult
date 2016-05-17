@@ -34,7 +34,7 @@
 	</target>
 
 	<target name="compile">
-		<javac encoding="utf-8" debug="on" srcdir="${src.dir}" destdir="${build.dir}/${classes.dir}" includeAntRumtime="false" classpathref="classpath"/>
+		<javac encoding="gbk" debug="on" srcdir="${src.dir}" destdir="${build.dir}/${classes.dir}" includeAntRuntime="false" classpathref="classpath"/>
 	</target>
 
 	<target name="main" depends="clean,init,compile"/>
@@ -64,6 +64,6 @@
 		<exec executable="${tomcat.home}/bin/startup.sh" failonerror="false"/>
 	</target>
 
-	 <target name="restart" depends="dist,shutdowntomcat,startuptomcat" />
+	 <target name="restart" depends="dist,stopt,startt" />
 
 </project>
