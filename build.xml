@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="show_echarts" basedir="." default="dist">
+
+	<property name="tomcat.home" value="/home/ian/freeworld_programs/apache-tomcat-8.5.0"/>
+	<property name="webapps.dir" value="/home/ian/webapps"/>
+
+	<property name="build.dir" value="build"/>
+	<property name="src.dir" value="src"/>
+	<property name="webRoot.dir" value="WebRoot"/>
+	<property name="web-inf.dir" value="WEB-INF"/>
+	<property name="classes.dir" value="WEB-INF/classes"/>
+	<property name="lib.dir" value="${webRoot.dir}/WEB-INF/lib"/>
+	<property name="tomcat.lib.dir" value="${tomcat.home}/lib"/>
+
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${tomcat.lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement path="${classes.dir}"/>
+	</path>
+
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.dir}/${web-inf.dir}"/>
+		<mkdir dir="${build.dir}/${classes.dir}"/>
+	</target>
+
+	<target name="compile">
+		<javac encoding="utf-8" debug="on" srcdir="${src.dir}" destdir="${build.dir}/${classes.dir}" includeAntRumtime="false" classpathref="classpath"/>
+	</target>
+
+	<target name="main" depends="clean,init,compile"/>
+
+	<target name="dist" depends="clean,init,compile">
+		<copy todir="${build.dir}/${classes.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}">
+			<fileset dir="${webRoot.dir}">
+				<include name="**/**"/>
+				<include name="**/*Test*"/>
+			</fileset>
+		</copy>
+		<war destfile="${webapps.dir}/${ant.project.name}.war" basedir="${build.dir}" webxml="${build.dir}/${web-inf.dir}/web.xml"/>
+		<delete dir="${webapps.dir}/${ant.project.name}"/>
+	</target>
+
+	<target name="stopt">
+		<exec executable="${tomcat.home}/bin/shutdown.sh" failonerror="false"/>
+	</target>
+
+	<target name="startt">
+		<exec executable="${tomcat.home}/bin/startup.sh" failonerror="false"/>
+	</target>
+
+	 <target name="restart" depends="dist,shutdowntomcat,startuptomcat" />
+
+</project>
