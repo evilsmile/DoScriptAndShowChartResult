@@ -49,7 +49,7 @@ public class DataAccessServlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		String[] categories = {"Ğ¬", "³ÄÉÀ", "ÍâÌ×", "Å£×Ğ¿ã"};
+		String[] categories = {"Ğ¬", "³ÄÉÀ", "ÍâÌ×", "³¤¿ã"};
 		Integer[] values = {80, 50, 75, 100};
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("categories", categories);
