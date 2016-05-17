@@ -5,16 +5,27 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
 	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
   <servlet>
-    <description>Supply data for graphics show</description>
-    <display-name>Supply data for graphics show</display-name>
-    <servlet-name>DataAccessServlet</servlet-name>
-    <servlet-class>com.echart.data.DataAccessServlet</servlet-class>
+	  <description>Supply data for graphics show</description>
+	  <display-name>Supply data for graphics show</display-name>
+	  <servlet-name>DataAccessServlet</servlet-name>
+	  <servlet-class>com.echart.data.DataAccessServlet</servlet-class>
   </servlet>
+  <servlet>
+	  <description>upload handler</description>
+	  <display-name>upload handler</display-name>
+	  <servlet-name>UploadHandler</servlet-name>
+	  <servlet-class>com.echart.data.UploadHandler</servlet-class>
+  </servlet>
+
 
   <servlet-mapping>
     <servlet-name>DataAccessServlet</servlet-name>
-    <url-pattern>/DataAccessServlet</url-pattern>
-  </servlet-mapping>
+	<url-pattern>/DataAccessServlet</url-pattern>
+</servlet-mapping>
+<servlet-mapping>
+	<servlet-name>UploadHandler</servlet-name>
+	<url-pattern>/servlet/UploadHandler</url-pattern>
+</servlet-mapping>
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>

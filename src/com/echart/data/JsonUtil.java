@@ -33,7 +33,26 @@ public class JsonUtil {
 			HttpServletRequest request, HttpServletResponse response) {
 		writeJsonByFilter(object, null, excludesProperties, request, response);
 	}
-	
+
+	public static String parseToJson(Object object, HttpServletRequest request) {
+		return parseJsonByFilter(object, request);
+	}
+
+	public static String parseJsonByFilter(Object object, HttpServletRequest request) {
+		FastjsonPropertyFilter filter = new FastjsonPropertyFilter();
+		String userAgent = request.getHeader("User-Agent");
+		if (userAgent.indexOf("MSIE") > -1 && (userAgent.indexOf("MSIE 6") > -1)) {
+			return JSON.toJSONString(object, filter, 
+					SerializerFeature.WriteDateUseDateFormat, 
+					SerializerFeature.DisableCircularReferenceDetect, 
+					SerializerFeature.BrowserCompatible);
+		} else {
+			return JSON.toJSONString(object, filter, 
+					SerializerFeature.WriteDateUseDateFormat, 
+					SerializerFeature.DisableCircularReferenceDetect);
+		}
+	}
+
 	public static void writeJsonByFilter(Object object, String[] includesProperties,
 			String[] excludesProperties, HttpServletRequest request, HttpServletResponse response) {
 		response.setContentType("text/html;charset=utf-8");

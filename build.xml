@@ -64,6 +64,6 @@
 		<exec executable="${tomcat.home}/bin/startup.sh" failonerror="false"/>
 	</target>
 
-	 <target name="restart" depends="stopt,startt" />
+	 <target name="restart" depends="dist,stopt,startt" />
 
 </project>
