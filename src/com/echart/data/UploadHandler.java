@@ -115,9 +115,18 @@ public class UploadHandler extends HttpServlet {
 
 			} else if (operation.equals("run")) {
 				try {
+					String scriptExecutor = "";
+
+					String exeSuffix = filename.substring(filename.lastIndexOf(".") + 1);
+					System.out.println("suffix: " +exeSuffix);
+					if (exeSuffix.equals("sh")) {
+						scriptExecutor = "sh";
+					} else if (exeSuffix.equals("py")) {
+						scriptExecutor = "python";
+					}
 					InputStream shellResultIn = null;
 					InputStream shellErrorIn = null;
-					Process pro = Runtime.getRuntime().exec(new String[]{"sh", wholePath});
+					Process pro = Runtime.getRuntime().exec(new String[]{scriptExecutor, wholePath});
 					pro.waitFor();
 
 					shellErrorIn = pro.getErrorStream();
