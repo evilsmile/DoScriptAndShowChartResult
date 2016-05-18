@@ -14,7 +14,7 @@
 		document.mainForm.submit();
 }
 </script>
-<div class="btn_wrapper">
+<div class="wrapper">
 	<form name="mainForm" action="${pageContext.request.contextPath}/servlet/UploadHandler" enctype="multipart/form-data" method="post">
 		<div class="file">
 			<input type="file" name="script"><label class="tip">选择脚本</label>

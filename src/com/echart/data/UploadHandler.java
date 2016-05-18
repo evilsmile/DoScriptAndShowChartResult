@@ -50,7 +50,6 @@ public class UploadHandler extends HttpServlet {
 			System.out.println(savePath + " not exists. Create it.");
 			file.mkdir();
 		}
-		String message = "";
 		String result = "";
 		String error = "";
 
@@ -109,17 +108,34 @@ public class UploadHandler extends HttpServlet {
 				in.close();
 				out.close();
 				opFile.delete();
-				message = "Upload success.<br/>";
-				request.setAttribute("message", message);
+				result = "Upload success.";
 				request.setAttribute("result", result);
 				request.setAttribute("error", error);
 				request.getRequestDispatcher("/message.jsp").forward(request, response);
+
 			} else if (operation.equals("run")) {
 				try {
 					InputStream shellResultIn = null;
 					InputStream shellErrorIn = null;
 					Process pro = Runtime.getRuntime().exec(new String[]{"sh", wholePath});
 					pro.waitFor();
+
+					shellErrorIn = pro.getErrorStream();
+					BufferedReader errRead = new BufferedReader(new InputStreamReader(shellErrorIn));
+					for (String tmpStr = errRead.readLine(); tmpStr != null; tmpStr = errRead.readLine())
+					{
+						error += tmpStr;
+					}
+
+					if (error != null && error != "") {
+						System.out.println(error);
+						result = "Run failed!";
+						request.setAttribute("result", result);
+						request.setAttribute("error", error);
+						request.getRequestDispatcher("/message.jsp").forward(request, response);
+						return;
+					}
+
 					shellResultIn = pro.getInputStream();
 					BufferedReader read = new BufferedReader(new InputStreamReader(shellResultIn));
 					String categoriesStr = read.readLine();
@@ -131,10 +147,6 @@ public class UploadHandler extends HttpServlet {
 						result += tmpStr + "\n";
 					}
 
-					shellErrorIn = pro.getErrorStream();
-					read = new BufferedReader(new InputStreamReader(shellErrorIn));
-					error = read.readLine();
-
 					String[] categories = categoriesStr.split(" ");
 					String[] values = dataStr.split(" ");
 					Map<String, Object> json = new HashMap<String, Object>();
@@ -144,21 +156,19 @@ public class UploadHandler extends HttpServlet {
 					System.out.println("json reply:" + jsonReply);
 					request.setAttribute("json", jsonReply);
 
-					if (error != null && error != "") {
-						request.setAttribute("message", message);
-						request.setAttribute("result", result);
-						request.setAttribute("error", error);
-						request.getRequestDispatcher("/message.jsp").forward(request, response);
-					} else {
-						request.getRequestDispatcher("/show.jsp").forward(request, response);
-					}
+					request.getRequestDispatcher("/show.jsp").forward(request, response);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			System.out.println(result);
 		} catch(Exception e) {
-			message = "Upload failed!";
+			result = "Upload failed!";
+			error = "Exception!";
+			request.setAttribute("result", result);
+			request.setAttribute("error", error);
+			request.getRequestDispatcher("/message.jsp").forward(request, response);
 			e.printStackTrace();
 		}
 	} 

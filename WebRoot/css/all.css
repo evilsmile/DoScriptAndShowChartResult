@@ -34,7 +34,7 @@
 	text-decoration: none;
 }
 
-.btn_wrapper {
+.wrapper {
    	 margin: -100px;
 	 position:absolute;
 	 top:50%;
@@ -73,3 +73,29 @@
 	border-color: #ccc;
 	text-decoration: none;
 }
+
+#options {
+	border: 1px solid #eee;
+	border-radius: 5px;
+	padding: 20px;
+}
+#showBtn {
+	height: 30px;
+	line-height: 20px;
+}
+
+label {
+	height:24px;
+	line-height:22px;
+	color:#999;
+	padding-left:18px;
+}
+
+input {
+	margin: 10px;
+}
+select {
+	border: solid 1px #000;
+}
+
+
