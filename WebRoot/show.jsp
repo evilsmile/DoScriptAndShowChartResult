@@ -62,7 +62,7 @@
 				} ],
 				series : [ {
 					'name' : '销量',
-					'type' : 'bar',
+					'type' : 'line',
 					'data' : values
 				} ]
 			};

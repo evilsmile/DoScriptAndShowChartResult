@@ -42,96 +42,126 @@ public class UploadHandler extends HttpServlet {
 	 * @throws IOException if an error occurred
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-			String savePath = this.getServletContext().getRealPath("/WEB-INF/upload");
-			File file = new File(savePath);
-			if (!file.exists() && !file.isDirectory()) {
-				System.out.println(savePath + " not exists. Create it.");
-				file.mkdir();
+		throws ServletException, IOException {
+
+		String savePath = this.getServletContext().getRealPath("/WEB-INF/upload");
+		File file = new File(savePath);
+		if (!file.exists() && !file.isDirectory()) {
+			System.out.println(savePath + " not exists. Create it.");
+			file.mkdir();
+		}
+		String message = "";
+		String result = "";
+		String error = "";
+
+		try {
+			DiskFileItemFactory factory = new DiskFileItemFactory();
+			ServletFileUpload upload = new ServletFileUpload(factory);
+			upload.setHeaderEncoding("UTF-8");
+			if (!ServletFileUpload.isMultipartContent(request)) {
+				System.out.println("not multi");
+				return;
 			}
-			String message = "";
-			String result = "";
-			String error = "";
-			try {
-				DiskFileItemFactory factory = new DiskFileItemFactory();
-				ServletFileUpload upload = new ServletFileUpload(factory);
-				upload.setHeaderEncoding("UTF-8");
-				if (!ServletFileUpload.isMultipartContent(request)) {
-					return;
-				}
 
-				List<FileItem> list = upload.parseRequest(request);
-				for (FileItem item : list) {
-					if (item.isFormField()) {
-						String name = item.getFieldName();
-						String value = item.getString("UTF-8");
-						System.out.println(name + "=" + value);
-					} else {
-						String filename = item.getName();
-						System.out.println(filename);
-						if (filename == null || filename.trim().equals("")) {
-							continue;
-						}
-
-						filename = filename.substring(filename.lastIndexOf("\\") + 1);
-						InputStream in = item.getInputStream();
-						FileOutputStream out = new FileOutputStream(savePath + "/" + filename);
-						byte buffer[] = new byte[1024];
-						int len = 0;
-						while ((len = in.read(buffer)) > 0) {
-							out.write(buffer, 0, len);
-						}
-
-						in.close();
-						out.close();
-						item.delete();
-						message = "Upload success.<br/>";
-
-						try {
-							InputStream shellResultIn = null;
-							InputStream shellErrorIn = null;
-							Process pro = Runtime.getRuntime().exec(new String[]{"sh", savePath + "/" + filename});
-							pro.waitFor();
-							shellResultIn = pro.getInputStream();
-							BufferedReader read = new BufferedReader(new InputStreamReader(shellResultIn));
-							for (String tmpStr = read.readLine(); tmpStr != null; tmpStr = read.readLine())
-							{
-								result += tmpStr + "\n";
-							}
-
-							shellErrorIn = pro.getErrorStream();
-							read = new BufferedReader(new InputStreamReader(shellErrorIn));
-							error = read.readLine();
-
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+			List<FileItem> list = upload.parseRequest(request);
+			System.out.println("IS multi. list size: " + list.size());
+			FileItem opFile = null;
+			String operation = "";
+			for (FileItem item : list) {
+				if (item.isFormField()) {
+					String name = item.getFieldName();
+					String value = item.getString("UTF-8");
+					System.out.println(name + "=" + value);
+					if (name.equals("upload")) {
+						operation = "upload";
+					} else if (name.equals("run")) {
+						operation = "run";
 					}
+				} else {
+					opFile = item;
 				}
-			} catch(Exception e) {
-				message = "Upload failed!";
-				e.printStackTrace();
 			}
-			request.setAttribute("message", message);
-			request.setAttribute("result", result);
-			request.setAttribute("error", error);
+			if (opFile == null) {
+				error = "No upload file";
+				System.out.println(error);
+				return;
+			}
+			String filename = opFile.getName();
+			System.out.println(filename);
+			if (filename == null || filename.trim().equals("")) {
+				error = "Empty file name!";
+				System.out.println(error);
+				return;
+			}
 
-			System.out.println(result);
-			String[] categories = {"show", "chensan", "waitao", "changku"};
-			String[] values = {"80", "50", "75", "120"};
-			Map<String, Object> json = new HashMap<String, Object>();
-			json.put("categories", categories);
-			json.put("values", values);
-			String jsonReply = JsonUtil.parseToJson(json, request);
-			System.out.println("json reply:" + jsonReply);
-			request.setAttribute("json", jsonReply);
+			filename = filename.substring(filename.lastIndexOf("\\") + 1);
+			String wholePath = savePath + "/" + filename;
+			//true
+			if (operation.equals("upload")) {
+				InputStream in = opFile.getInputStream();
+				FileOutputStream out = new FileOutputStream(wholePath);
+				byte buffer[] = new byte[1024];
+				int len = 0;
+				while ((len = in.read(buffer)) > 0) {
+					out.write(buffer, 0, len);
+				}
 
-			if (error != null && error != "") {
+				in.close();
+				out.close();
+				opFile.delete();
+				message = "Upload success.<br/>";
+				request.setAttribute("message", message);
+				request.setAttribute("result", result);
+				request.setAttribute("error", error);
 				request.getRequestDispatcher("/message.jsp").forward(request, response);
-			} else {
-				request.getRequestDispatcher("/show.jsp").forward(request, response);
+			} else if (operation.equals("run")) {
+				try {
+					InputStream shellResultIn = null;
+					InputStream shellErrorIn = null;
+					Process pro = Runtime.getRuntime().exec(new String[]{"sh", wholePath});
+					pro.waitFor();
+					shellResultIn = pro.getInputStream();
+					BufferedReader read = new BufferedReader(new InputStreamReader(shellResultIn));
+					String categoriesStr = read.readLine();
+					String dataStr = read.readLine();
+
+					// FIXME: useless
+					for (String tmpStr = read.readLine(); tmpStr != null; tmpStr = read.readLine())
+					{
+						result += tmpStr + "\n";
+					}
+
+					shellErrorIn = pro.getErrorStream();
+					read = new BufferedReader(new InputStreamReader(shellErrorIn));
+					error = read.readLine();
+
+					String[] categories = categoriesStr.split(" ");
+					String[] values = dataStr.split(" ");
+					Map<String, Object> json = new HashMap<String, Object>();
+					json.put("categories", categories);
+					json.put("values", values);
+					String jsonReply = JsonUtil.parseToJson(json, request);
+					System.out.println("json reply:" + jsonReply);
+					request.setAttribute("json", jsonReply);
+
+					if (error != null && error != "") {
+						request.setAttribute("message", message);
+						request.setAttribute("result", result);
+						request.setAttribute("error", error);
+						request.getRequestDispatcher("/message.jsp").forward(request, response);
+					} else {
+						request.getRequestDispatcher("/show.jsp").forward(request, response);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-	}
+			System.out.println(result);
+		} catch(Exception e) {
+			message = "Upload failed!";
+			e.printStackTrace();
+		}
+	} 
 
 	/**
 	 * The doPost method of the servlet. <br>
