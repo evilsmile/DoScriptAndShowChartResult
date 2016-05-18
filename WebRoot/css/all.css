@@ -1,0 +1,75 @@
+.btn{
+	width:100px;
+	height:35px;
+	line-height:35px;
+	border:none;
+	margin:0 auto;
+}
+
+.submit {
+	position: relative;
+	display: inline-block;
+	background: #D0EEFF;
+	border: 1px solid #99D3F5;
+	border-radius: 4px;
+	padding: 4px 12px;
+	overflow: hidden;
+	color:#1E88C7;
+	text-decoration: none;
+	text-indent: 0;
+	line-height: 20px;
+}
+.submit input {
+	position: absolute;
+	font-size: 100px;
+	right: 0;
+	top: 0;
+	opacity: 0;
+}
+
+.submit:hover {
+	background: #AADFFD;
+	border-color: #78C3F3;
+	color: #004974;
+	text-decoration: none;
+}
+
+.btn_wrapper {
+   	 margin: -100px;
+	 position:absolute;
+	 top:50%;
+	 left:50%;
+}
+
+.file {
+	padding: 4px 30px;
+	height: 55px;
+	line-height: 45px;
+	position: relative;
+	cursor: pointer;
+	color: #888;
+	background: #fafafa;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	overflow: hidden;
+	display: inline-block;
+	*display: inline;
+	*zoom: 1
+}
+
+.file input {
+	position: absolute;
+	font-size: 100px;
+	right: 0;
+	top: 0;
+	opacity: 0;
+	filter: alpha(opacity=0);
+	cursor: pointer
+}
+
+.file:hover {
+	color: #444;
+	background: #eee;
+	border-color: #ccc;
+	text-decoration: none;
+}
