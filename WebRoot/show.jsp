@@ -33,9 +33,7 @@
 		<div id="main" style="height: 400px"></div>
 		<script src="js/echarts/source/echarts-all.js"></script>
 		<script type="text/javascript">
-			function showDiffEchartsSetting() {
-
-			}
+			function showDiffEchartsSetting() { }
 
 			function showData() {
 				$('#options').fadeOut("slow");
