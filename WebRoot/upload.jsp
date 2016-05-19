@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>上传脚本</title>
+<title>统计脚本</title>
 <link rel="stylesheet" type="text/css" href="css/all.css"/>
 <script type="text/javascript" src="${ctx}/js/jquery-1.12.3.min.js"></script>
 			<!--javascript:location.href='servlet/UploadHandler'-->
@@ -29,7 +29,12 @@
 			<input type="submit" name="run" value="运行">运行
 		</div>
 	</form>
-		<hr style="margin:2px -20px;height:1px;border:none;border-top:1px dashed #0066CC;" />
+	<form name="listFileForm" action="servlet/ListFilesHandler" method="post">
+		<div class="file">
+			<input type="submit" name="list" value="列表">查看所有文件
+		</div>
+	</form>
+	<hr style="margin:2px -20px;height:1px;border:none;border-top:1px dashed #0066CC;" />
 </div>
 
 <script type="text/javascript">
