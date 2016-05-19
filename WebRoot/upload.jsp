@@ -10,24 +10,26 @@
 <body style="background:#71AFA4">
 <script type="text/javascript">
 	function go_url(actn) {
-		document.getElementsByName('operation').value = actn;
-		document.mainForm.submit();
-}
+		document.uploadForm.submit();
+	}
 </script>
 <div class="wrapper">
-	<form name="mainForm" action="${pageContext.request.contextPath}/servlet/UploadHandler" enctype="multipart/form-data" method="post">
+	<form name="uploadForm" action="servlet/UploadHandler" enctype="multipart/form-data" method="post">
 		<div class="file">
-			<input type="file" name="script"><label class="tip">选择脚本</label>
+			<input type="file" name="script" id="upload_file"><label class="tip">选择脚本</label>
 		</div>
 		<div class="file">
 			<input type="submit" name="upload" value="上传">上传
 		</div>
+	</form>
+	<form name="runForm" action="servlet/RunHandler" method="post">
 		<div class="file">
+			<!-- run_file is consistent with upload_file-->
+			<input type="hidden" id="runfile" name="run_filename" value="">
 			<input type="submit" name="run" value="运行">运行
 		</div>
-
-		<hr style="margin:2px -20px;height:1px;border:none;border-top:1px dashed #0066CC;" />
 	</form>
+		<hr style="margin:2px -20px;height:1px;border:none;border-top:1px dashed #0066CC;" />
 </div>
 
 <script type="text/javascript">
@@ -37,6 +39,7 @@
 		var arr = filePath.split('\\');
 		var fileName = arr[arr.length - 1];
 		$(".tip").html(fileName);
+		$("#runfile").val(fileName);
 		})
 </script>
 

@@ -3,7 +3,6 @@ package com.echart.data;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,17 +16,29 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-
-public class UploadHandler extends HttpServlet {
+public class RunHandler extends HttpServlet {
 
 	/**
 	 * Constructor of the object.
 	 */
-	public UploadHandler() {
+	public RunHandler() {
 		super();
+	}
+
+	/**
+	 * Decide executor of the script file.
+	 */
+	private String getExecutor(String filename) {
+		String scriptExecutor = "";
+		String exeSuffix = filename.substring(filename.lastIndexOf(".") + 1);
+		System.out.println("suffix: " +exeSuffix);
+		if (exeSuffix.equals("sh")) {
+			scriptExecutor = "sh";
+		} else if (exeSuffix.equals("py")) {
+			scriptExecutor = "python";
+		}
+
+		return scriptExecutor;
 	}
 
 	/**
@@ -50,36 +61,12 @@ public class UploadHandler extends HttpServlet {
 			String savePath = this.getServletContext().getRealPath(GlobalConfig.UPLOAD_DIR);
 			File file = new File(savePath);
 			if (!file.exists() && !file.isDirectory()) {
-				System.out.println(savePath + " not exists. Create it.");
-				file.mkdir();
+				error = savePath + " not exists!";
+				break;
 			}
 
 			try {
-				DiskFileItemFactory factory = new DiskFileItemFactory();
-				ServletFileUpload upload = new ServletFileUpload(factory);
-				upload.setHeaderEncoding("UTF-8");
-				if (!ServletFileUpload.isMultipartContent(request)) {
-					error = "Invalid upload content";
-					break;
-				}
-
-				List<FileItem> list = upload.parseRequest(request);
-				System.out.println("IS multi. list size: " + list.size());
-				FileItem opFile = null;
-				for (FileItem item : list) {
-					if (item.isFormField()) {
-						String name = item.getFieldName();
-						String value = item.getString("UTF-8");
-						System.out.println(name + "=" + value);
-					} else {
-						opFile = item;
-					}
-				}
-				if (opFile == null) {
-					error = "Null upload file";
-					break;
-				}
-				String filename = opFile.getName();
+				String filename = request.getParameter("run_filename");
 				System.out.println(filename);
 				if (filename == null || filename.trim().equals("")) {
 					error = "Empty file name!";
@@ -88,33 +75,60 @@ public class UploadHandler extends HttpServlet {
 
 				filename = filename.substring(filename.lastIndexOf("\\") + 1);
 				String wholePath = savePath + "/" + filename;
-				InputStream in = opFile.getInputStream();
-				FileOutputStream out = new FileOutputStream(wholePath);
-				byte buffer[] = new byte[1024];
-				int len = 0;
-				while ((len = in.read(buffer)) > 0) {
-					out.write(buffer, 0, len);
+				String scriptExecutor = getExecutor(filename);
+
+				InputStream shellResultIn = null;
+				InputStream shellErrorIn = null;
+				Process pro = Runtime.getRuntime().exec(new String[]{scriptExecutor, wholePath});
+				pro.waitFor();
+
+				shellErrorIn = pro.getErrorStream();
+				BufferedReader errRead = new BufferedReader(new InputStreamReader(shellErrorIn));
+				for (String tmpStr = errRead.readLine(); tmpStr != null; tmpStr = errRead.readLine())
+				{
+					error += tmpStr;
 				}
 
-				in.close();
-				out.close();
-				opFile.delete();
-				result = "Upload success.";
+				if (error != null && error != "") {
+					break;
+				}
+
+				shellResultIn = pro.getInputStream();
+				BufferedReader read = new BufferedReader(new InputStreamReader(shellResultIn));
+				String keysStr = read.readLine();
+				String valuesStr = read.readLine();
+
+				// FIXME: useless
+				for (String tmpStr = read.readLine(); tmpStr != null; tmpStr = read.readLine())
+				{
+					result += tmpStr + "\n";
+				}
+
+				String[] keys = keysStr.split(" ");
+				String[] values = valuesStr.split(" ");
+				Map<String, Object> json = new HashMap<String, Object>();
+				json.put("keys", keys);
+				json.put("values", values);
+				String jsonReply = JsonUtil.parseToJson(json, request);
+				System.out.println("json reply:" + jsonReply);
+				request.setAttribute("json", jsonReply);
 			} catch(Exception e) {
-				result = "Upload failed!";
 				error = "Exception!";
 				e.printStackTrace();
 			}
 		} while(false);
 
 		if (error != "") {
+			result = "Run failed!";
 			System.out.println("error: " + error);
+			request.setAttribute("result", result);
+			request.setAttribute("error", error);
+			request.getRequestDispatcher("/message.jsp").forward(request, response);
+		} else {
+			result = "Run sucess!!";
+			request.getRequestDispatcher("/show.jsp").forward(request, response);
 		}
-
-		request.setAttribute("result", result);
-		request.setAttribute("error", error);
-		request.getRequestDispatcher("/message.jsp").forward(request, response);
-	} 
+	}
 
 	/**
 	 * The doPost method of the servlet. <br>
@@ -128,7 +142,7 @@ public class UploadHandler extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
 		doGet(request, response);
 	}
+
 }

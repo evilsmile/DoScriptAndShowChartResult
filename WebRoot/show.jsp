@@ -60,7 +60,7 @@
 				if (style == "line" || style == "bar") {
 					var categories = [];
 					var values = [];
-					categories = jsonReply.categories;
+					categories = jsonReply.keys;
 					values = jsonReply.values;
 				
 					var lineOption = {
